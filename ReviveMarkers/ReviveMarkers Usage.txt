@@ -1,0 +1,23 @@
+ReviveMarker
+
+About: 	This Plugin allows you to drop a respawn marker on death in normal Multiplayer
+		The respawn marker can then be healed by a friendly medic to revive the person
+		that it is bound to.
+
+Commands:
+	
+	revivemarkers_optin						-	Opt yourself into dropping Revive Markers.
+	revivemarkers_optout					-	Opt yourself out of dropping Revive Markers.
+	
+ConVars
+
+	revivemarkers_version					-	Revive Markers Version (DO NOT CHANGE!)
+	revivemarkers_no_markers_without_medic	-	Change if Revive Markers drop when there are no medics in the team.
+	revivemarkers_max_revives				-	Set maximum Number of Revives. 0 to disable.
+	revivemarkers_disable					-	Disable Plugin Functionality
+	revivemarkers_admin_only				-	Allow dropping of revive Markers only for admins
+	revivemarkers_drop_for_one_team			-	0 - Both Teams drop Markers. 1 - Only RED. 2 - Only BLU.
+	revivemarkers_decay_time				-	Set a timer that despawns the Marker before a player respawns, set to 0.0 to disable
+	revivemarkers_visible_for_medics		-	Set Visibility of Respawn Markers for everyone or Medics only
+	revivemarkers_use_override_string		-	Use Permission Override Strings
+VSH:revivemarkers_show_markers_for_hale		-	Let the current Saxton Hale see the Revive Markers

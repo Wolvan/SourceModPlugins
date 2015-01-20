@@ -1,0 +1,31 @@
+[FONT="Arial Black"]About[/FONT]
+This Plugin allows you to drop a respawn marker on death in normal Multiplayer. The respawn marker can then be healed by a friendly medic to revive the person that it is bound to.
+
+[FONT="Arial Black"]Features[/FONT]
+1.) Easy to use: Just drag the .smx file into your plugins folder and you're set
+2.) Small: Not cluttered with unecessary code
+3.) Works: Die, let yourself be respawned by your friendly neighbourhood medic
+
+[FONT="Arial Black"]ConVars[/FONT]
+revivemarkers_version - Just an ordinary version ConVar
+
+[FONT="Arial Black"]Changelog[/FONT]
+[QUOTE]
+2014-07-15 (v1.0)
+
+* Initial release.
+[/QUOTE]
+
+[FONT="Arial Black"]Installation instructions[/FONT]
+1.) Download .smx file below and put it in your plugins folder
+2.) Load it with sm plugins load ReviveMarkers or by restarting your server
+
+[FONT="Arial Black"]Dependencies[/FONT]
+None
+
+[FONT="Arial Black"]Plans[/FONT]
+Nothing right now, anything you guys might wanna see being added?
+
+[FONT="Arial Black"]Media[/FONT]
+
+If you have any kind of media related to this, I'd love to add it here.

@@ -1,0 +1,25 @@
+TF2_MedicMvMShield
+
+About: 	This Plugin allows you to spawn Medic's MvM Shield in normal Multiplayer
+		You can either type medicshield_shield/medicshield_shield2 into the console/chat or you can
+		also use Attack3 (Default: Mouse3) to deploy the shield. It will stay for 10 seconds
+		but will disappear if you switch your weapon away from the medigun.
+
+Commands:
+
+	medicshield_shield					-	Activate Shield Lvl1
+	medicshield_shield2					-	Activate Shield Lvl2 (BROKEN. Currently activates lvl1)
+	medicshield_info					-	Show Plugin&Config Info
+	
+ConVars
+
+	medicshield_enable_plugin 1			-	Enable or disable the Plugin
+	medicshield_disable_recharge 0		-	Disable Recharge Time/required Übercharge
+	medicshield_recharge_mode 1			- 	Change Recharge Mode (0 - Time-based recharge, 1 - Medigun charge based recharge)
+	medicshield_recharge_delay 60		-	Change recharge time in seconds if medicshield_recharge_mode is 0
+	medicshield_required_charge 0.75	-	Required charge to deploy a shield if medicshield_recharge_mode is 1
+	medicshield_admin_only 0			-	Enable or disable admin-only mode
+	medicshield_recharge_on_death 1		-	Enable or disable recharging the shield on death (only works with time-based recharge)
+	medicshield_team					-	Allow only one team to use the shield. 0 - Both teams, 1 - RED, 2 - BLU
+	medicshield_use_override_strings	-	Use Override Strings for Permissions
+	medicshield_version					-	Medic's MvM Shield Version (DO NOT CHANGE!)
