@@ -1,7 +1,7 @@
 /* Copyright
  * Category: None
  * 
- * Medic MvM Shield 1.2.0 by Wolvan
+ * Medic MvM Shield 1.2.2 by Wolvan
  * Contact: wolvan1@gmail.com
  * Plugin based on abrandnewday's Medic's Anti-Projectile Shield & Pelipoika's modified Version
 */
@@ -26,7 +26,7 @@
  * 
 */
 #define PLUGIN_NAME "Medic's MvM Shield"
-#define PLUGIN_VERSION "1.2.1"
+#define PLUGIN_VERSION "1.2.2"
 #define PLUGIN_AUTHOR "Wolvan"
 #define PLUGIN_DESCRIPTION "Activate the Medic's Shield in PvP easily! Highly customizable using CVars and/or the Admin Menu"
 #define PLUGIN_URL "https://forums.alliedmods.net/showthread.php?t=245063"
@@ -66,6 +66,15 @@ new Handle:g_rechargeOnDeath = INVALID_HANDLE;
 new Handle:g_team = INVALID_HANDLE;
 new Handle:g_useOverrideStrings = INVALID_HANDLE;
 
+/* Forward Handle creation
+ * Category: Storage
+ * 
+ * Create the Handles for the Forward Calls
+ * 
+*/
+new Handle:forward_shieldSpawn = INVALID_HANDLE;
+new Handle:forward_shieldReady = INVALID_HANDLE;
+
 /* Create plugin instance
  * Category: Plugin Instance
  *  
@@ -74,7 +83,7 @@ new Handle:g_useOverrideStrings = INVALID_HANDLE;
 */
 public Plugin:myinfo = {
 	name 			= PLUGIN_NAME,
-	author 		= PLUGIN_AUTHOR,
+	author 			= PLUGIN_AUTHOR,
 	description 	= PLUGIN_DESCRIPTION,
 	version 		= PLUGIN_VERSION,
 	url 			= PLUGIN_URL
@@ -123,6 +132,9 @@ public OnPluginStart() {
 	RegConsoleCmd("medicshield_shield", Command_Shield, "Turns on the Medic's shield effect from MvM. Usage: medicshield_shield");
 	RegConsoleCmd("medicshield_shield2", Command_Shield2, "Turns on the Medic's advanced shield effect from MvM. Usage: medicshield_shield2");
 	RegConsoleCmd("medicshield_info", PrintPluginInfo, "Show information about the Plugin");
+	
+	forward_shieldSpawn = CreateGlobalForward("OnMedicShieldSpawn", ET_Event, Param_Cell);
+	forward_shieldReady = CreateGlobalForward("OnMedicShieldReady", ET_Event, Param_Cell);
 	
 	if (FindConVar("medicshield_version") == INVALID_HANDLE) { AutoExecConfig(true); }
 	
@@ -320,6 +332,16 @@ public Action:Command_Shield(client, args) {
 			return Plugin_Handled;
 		}
 	}
+	
+	new Action:result = Plugin_Continue;
+	Call_StartForward(forward_shieldSpawn);
+	Call_PushCell(client);
+	Call_Finish(result);
+	
+	if (result == Plugin_Handled || result == Plugin_Stop) {
+		return Plugin_Handled;
+	}
+	
 	if(permissionssm) {
 		if(!PsmHasPermission(client, "%s.shield.lvl1", PERMISSIONNODE_BASE)) {
 			PrintToChat(client, "[SM] No Permission to deploy shield Level 1");
@@ -394,6 +416,16 @@ public Action:Command_Shield2(client, args) {
 			return Plugin_Handled;
 		}
 	}
+	
+	new Action:result = Plugin_Continue;
+	Call_StartForward(forward_shieldSpawn);
+	Call_PushCell(client);
+	Call_Finish(result);
+	
+	if (result == Plugin_Handled || result == Plugin_Stop) {
+		return Plugin_Handled;
+	}
+	
 	if(permissionssm) {
 		if(!PsmHasPermission(client, "%s.shield.lvl2", PERMISSIONNODE_BASE)) {
 			PrintToChat(client, "[SM] No Permission to deploy shield Level 2");
@@ -575,6 +607,14 @@ public Action:AnnounceReadyShield(Handle:timer, any:userid) {
 		return Plugin_Continue;
 	}
 	if (!GetConVarBool(g_pluginEnabled)) {
+		return Plugin_Continue;
+	}
+	new Action:result = Plugin_Continue;
+	Call_StartForward(forward_shieldReady);
+	Call_PushCell(client);
+	Call_Finish(result);
+	
+	if (result == Plugin_Handled || result == Plugin_Stop) {
 		return Plugin_Continue;
 	}
 	if(GetConVarBool(g_adminOnly)) {
