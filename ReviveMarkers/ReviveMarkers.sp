@@ -220,6 +220,10 @@ public OnPluginEnd() {
 	for (new i = 1; i <= MaxClients; i++) {
 		despawnReviveMarker(i);
 	}
+	UnhookEvent("player_death", Event_OnPlayerDeath);
+	UnhookEvent("player_spawn", Event_OnPlayerSpawn);
+	UnhookEvent("player_changeclass", Event_OnPlayerChangeClass);
+	UnhookEvent("teamplay_round_start", Event_OnRoundStart);
 }
 
 /* Client connects
@@ -415,11 +419,7 @@ public Action:optOut(client, args) {
 			PrintToChat(target_list[i], "[SM] You have been opted out of dropping ReviveMarkers by an Admin");
 			SetOptState(target_list[i]);
 		}
-		if(client != 0) {
-			PrintToChat(client, "[SM] Opted out %i Player(s)", target_count);
-		} else {
-			PrintToServer("[SM] Opted out %i Player(s)", target_count);
-		}	
+		ReplyToCommand(client,"[SM] Opted out %i Player(s)", target_count);
 	}
 	return Plugin_Handled;
 }
@@ -465,11 +465,7 @@ public Action:optIn(client, args) {
 			PrintToChat(target_list[i], "[SM] You have been opted in to dropping ReviveMarkers by an Admin");
 			SetOptState(target_list[i]);
 		}
-		if(client != 0) {
-			PrintToChat(client, "[SM] Opted in %i Player(s)", target_count);
-		} else {
-			PrintToServer("[SM] Opted in %i Player(s)", target_count);
-		}
+		ReplyToCommand(client,"[SM] Opted in %i Player(s)", target_count);
 	}
 	return Plugin_Handled;
 }
@@ -597,7 +593,7 @@ public bool:dropReviveMarker(client) {
 	// check if Permissions are given
 	if (permissionssm) {
 		if (!PsmHasPermission(client, "%s.DropMarker", PERMISSIONNODE_BASE)) {
-			//PrintToServer("User doesn't have Permission");
+			//PrintToServer("User doesn't have PSM Permission");
 			return false;
 		}
 	} else if (GetConVarBool(g_useOverrideString)) {
@@ -662,7 +658,6 @@ public bool:dropReviveMarker(client) {
  * 
 */
 public bool:spawnReviveMarker(client) {
-	
 	// spawn the Revive Marker
 	new clientTeam = GetClientTeam(client);
 	new reviveMarker = CreateEntityByName("entity_revive_marker");

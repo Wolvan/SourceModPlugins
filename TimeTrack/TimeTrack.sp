@@ -225,6 +225,14 @@ public Action:RunForwardCheck(client, args) {
 
 public OnPluginEnd() {
 	if (db != INVALID_HANDLE) { CloseHandle(db); }
+	if (db_PrepareStmtCheck != INVALID_HANDLE) { CloseHandle(db_PrepareStmtCheck); }
+	if (db_PrepareStmtForward != INVALID_HANDLE) { CloseHandle(db_PrepareStmtForward); }
+	if (db_PrepareStmtLog != INVALID_HANDLE) { CloseHandle(db_PrepareStmtLog); }
+	if (db_PrepareStmtLogread != INVALID_HANDLE) { CloseHandle(db_PrepareStmtLogread); }
+	if (db_PrepareStmtRead != INVALID_HANDLE) { CloseHandle(db_PrepareStmtRead); }
+	if (db_PrepareStmtUpdate != INVALID_HANDLE) { CloseHandle(db_PrepareStmtUpdate); }
+	if (db_PrepareStmtWrite != INVALID_HANDLE) { CloseHandle(db_PrepareStmtWrite); }
+	if (timer_forwardTimer != INVALID_HANDLE) { KillTimer(timer_forwardTimer); }
 }
 
 /* GetPlayerTime
