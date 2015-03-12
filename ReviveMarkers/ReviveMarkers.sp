@@ -33,7 +33,7 @@
 #define PLUGIN_AUTHOR "Wolvan"
 #define PLUGIN_DESCRIPTION "Drop Revive Markers on death! Let medics revive you!"
 #define PLUGIN_URL "https://forums.alliedmods.net/showthread.php?t=244208"
-#define PLUGIN_UPDATE_FILE "https://raw.githubusercontent.com/Wolvan/SourceModPlugins/master/ReviveMarkers/ReviveMarkers_Updater.txt"
+#define PLUGIN_UPDATE_FILE "http://wolvan.mooo.com/revivemarkers/raw/bd276b0eebe76c41319fc25eb572b56c05d1afdf/ReviveMarkers/ReviveMarkers_Updater.txt"
 #define PLUGIN_CONFIG "cfg/sourcemod/plugin.ReviveMarkers.cfg"
 #define PLUGIN_DATA_STORAGE "ReviveMarkers"
 #define PERMISSIONNODE_BASE "ReviveMarkers"
