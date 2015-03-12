@@ -49,6 +49,8 @@
 new respawnMarkers[MAXPLAYERS+1] = { INVALID_ENT_REFERENCE, ... };
 new currentTeam[MAXPLAYERS+1] = {0, ... };
 new reviveCount[MAXPLAYERS+1] = { 0, ... };
+new maxReviveCountOverride = -1;
+new Float:decayTimeOverride = -1.0;
 new bool:changingClass[MAXPLAYERS+1] = { false, ... };
 new bool:isOptOut[MAXPLAYERS+1] = { false, ... };
 new bool:isOptOutByAdmin[MAXPLAYERS+1] = { false, ... };
@@ -118,6 +120,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
 	CreateNative("ValidMarker", Native_ValidMarker);
 	CreateNative("SpawnRMarker", Native_SpawnRMarker);
 	CreateNative("DespawnRMarker", Native_DespawnRMarker);
+	CreateNative("SetDecayTime", Native_SetDecayTime);
+	CreateNative("SetReviveCount", Native_SetReviveCount);
 	
 	RegPluginLibrary("revivemarkers");
 	
@@ -642,7 +646,10 @@ public bool:dropReviveMarker(client) {
 	}
 	
 	// check if revives are exceeded
-	if ((GetConVarInt(g_maxReviveMarkerRevives) > 0) && (reviveCount[client] > GetConVarInt(g_maxReviveMarkerRevives) - 1)) {
+	if ((maxReviveCountOverride > -1) && (reviveCount[client] > maxReviveCountOverride - 1)) {
+		//PrintToServer("Revives exceeded");
+		return false;
+	} else if ((GetConVarInt(g_maxReviveMarkerRevives) > 0) && (reviveCount[client] > GetConVarInt(g_maxReviveMarkerRevives) - 1)) {
 		//PrintToServer("Revives exceeded");
 		return false;
 	}
@@ -696,8 +703,12 @@ public bool:spawnReviveMarker(client) {
 		}
 		DispatchSpawn(reviveMarker);
 		respawnMarkers[client] = EntIndexToEntRef(reviveMarker);
-		if ((GetConVarFloat(g_decayTime) >= 0.1) && (decayTimers[client] == INVALID_HANDLE)) {
-			decayTimers[client] = CreateTimer(GetConVarFloat(g_decayTime) + 0.1, Timer_DecayMarker, GetClientUserId(client));
+		if ((GetConVarFloat(g_decayTime) >= 0.1 || decayTimeOverride >= 0.0) && (decayTimers[client] == INVALID_HANDLE)) {
+			if (decayTimeOverride >= 0.0) {
+				decayTimers[client] = CreateTimer(decayTimeOverride + 0.1, Timer_DecayMarker, GetClientUserId(client));
+			} else {
+				decayTimers[client] = CreateTimer(GetConVarFloat(g_decayTime) + 0.1, Timer_DecayMarker, GetClientUserId(client));
+			}
 		}
 		CreateTimer(0.1, Timer_TransmitMarker, GetClientUserId(client));
 		return true;
@@ -897,6 +908,36 @@ public AttachAdminMenu() {
 	AddToTopMenu(hAdminMenu, "revivemarkers_optin", TopMenuObject_Item, AdminMenu_OptIn, obj_rmcommands, "revivemarkers_optin", ADMFLAG_SLAY);
 	AddToTopMenu(hAdminMenu, "revivemarkers_use_override_string", TopMenuObject_Item, AdminMenu_OverrideString, obj_rmcommands, "revivemarkers_use_override_string", ADMFLAG_SLAY);
 	if (VSHEnabled()) { AddToTopMenu(hAdminMenu, "revivemarkers_show_markers_for_hale", TopMenuObject_Item, AdminMenu_SaxtonHaleSeesItAll, obj_rmcommands, "revivemarkers_show_markers_for_hale", ADMFLAG_SLAY); }
+}
+
+/* Set Decay Time
+ * Category: Native Function
+ * 
+ * Set the Decay Time Override
+ * 
+*/
+public Native_SetDecayTime(Handle:plugin, numParams) {
+	new Float:time = Float:GetNativeCell(1);
+	if (time < -1) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Decay Time Override cannot be less than -1.");
+	}
+	decayTimeOverride = time;
+	return _:true;
+}
+
+/* Set Revive Count
+ * Category: Native Proxy
+ * 
+ * Sets the Max Revive Count Override
+ * 
+*/
+public Native_SetReviveCount(Handle:plugin, numParams) {
+	new maxCount = GetNativeCell(1);
+	if (maxCount < -1) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Max Revive Count Override cannot be less than -1.");
+	}
+	maxReviveCountOverride = maxCount;
+	return _:true;
 }
 
 /* Drop condition check Proxy
