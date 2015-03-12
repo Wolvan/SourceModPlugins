@@ -1,7 +1,7 @@
 /* Copyright
  * Category: None
  * 
- * Revive Markers 1.7.0 by Wolvan
+ * Revive Markers 1.7.2 by Wolvan
  * Contact: wolvan1@gmail.com
  * Big thanks to Mitchell & pheadxdll
 */
@@ -20,6 +20,7 @@
 #include <freak_fortress_2>
 #include <saxtonhale>
 #include <permissionssm>
+#include <updater>
 
 /* Plugin constants definiton
  * Category: Preprocessor
@@ -28,10 +29,11 @@
  * 
 */
 #define PLUGIN_NAME "Revive Markers"
-#define PLUGIN_VERSION "1.7.1"
+#define PLUGIN_VERSION "1.7.2"
 #define PLUGIN_AUTHOR "Wolvan"
 #define PLUGIN_DESCRIPTION "Drop Revive Markers on death! Let medics revive you!"
 #define PLUGIN_URL "https://forums.alliedmods.net/showthread.php?t=244208"
+#define PLUGIN_UPDATE_FILE "https://raw.githubusercontent.com/Wolvan/SourceModPlugins/master/ReviveMarkers/ReviveMarkers_Updater.txt"
 #define PLUGIN_CONFIG "cfg/sourcemod/plugin.ReviveMarkers.cfg"
 #define PLUGIN_DATA_STORAGE "ReviveMarkers"
 #define PERMISSIONNODE_BASE "ReviveMarkers"
@@ -189,6 +191,7 @@ public OnPluginStart() {
 	ff2installed = LibraryExists("freak_fortress_2");
 	vshinstalled = LibraryExists("saxtonhale");
 	permissionssm = LibraryExists("permissionssm");
+	if (LibraryExists("updater")) { Updater_AddPlugin(PLUGIN_UPDATE_FILE); }
 	
 	// set optOut, class and team variables
 	decl String:steamid[256], String:OptState[256], String:OptAdmin[256];
@@ -285,6 +288,8 @@ public OnLibraryRemoved(const String:name[]) {
 		ff2installed = false;
 	} else if (StrEqual(name, "permissionssm")) {
 		permissionssm = false;
+	} else if (StrEqual(name, "updater")) {
+		Updater_AddPlugin(PLUGIN_UPDATE_FILE);
 	}
 }
 
@@ -1000,6 +1005,16 @@ public Native_DespawnRMarker(Handle:plugin, numParams) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not connected", client);
 	}
 	return _:despawnReviveMarker(client);
+}
+
+/* Updater finished
+ * Category: Updater Callback
+ * 
+ * Reload ReviveMarkers once Updater finished it's task
+ * 
+*/
+public Updater_OnPluginUpdated() {
+	ReloadMyself();
 }
 
 /* No Markers without Medics
