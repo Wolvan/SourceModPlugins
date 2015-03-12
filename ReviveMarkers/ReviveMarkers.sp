@@ -288,8 +288,6 @@ public OnLibraryRemoved(const String:name[]) {
 		ff2installed = false;
 	} else if (StrEqual(name, "permissionssm")) {
 		permissionssm = false;
-	} else if (StrEqual(name, "updater")) {
-		Updater_AddPlugin(PLUGIN_UPDATE_FILE);
 	}
 }
 
@@ -307,6 +305,8 @@ public OnLibraryAdded(const String:name[]) {
 		ff2installed = true;
 	} else if (StrEqual(name, "permissionssm")) {
 		permissionssm = true;
+	} else if (StrEqual(name, "updater")) {
+		Updater_AddPlugin(PLUGIN_UPDATE_FILE);
 	}
 }
 
