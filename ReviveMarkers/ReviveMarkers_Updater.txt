@@ -1,0 +1,22 @@
+"Updater"
+{
+	"Information"
+	{
+		"Version"
+		{
+			"Latest"	"1.7.2"
+		}
+		
+		"Notes"	"Changes in 1.7.2:"
+		"Notes"	"Added Updater Support"
+		"Notes"	"Added 2 new Natives"
+	}
+	
+	"Files"
+	{
+		"Plugin"	"Path_SM/plugins/ReviveMarkers.smx"
+		
+		"Source"	"Path_SM/scripting/include/revivemarkers.inc"
+		"Source"	"Path_SM/scripting/ReviveMarkers.sp"
+	}
+}
