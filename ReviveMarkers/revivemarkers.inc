@@ -57,7 +57,7 @@ native bool:SetReviveCount(maxPossibleRevives);
  * @return       		True if setting override successfully
  * @errors				decayTime < -1
  */
-native bool:setDecayTime(decayTime);
+native bool:SetDecayTime(decayTime);
 
 public SharedPlugin:__pl_ReviveMarkers = {
 	name = "revivemarkers",

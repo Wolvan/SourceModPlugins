@@ -923,7 +923,7 @@ public AttachAdminMenu() {
 */
 public Native_SetDecayTime(Handle:plugin, numParams) {
 	new Float:time = Float:GetNativeCell(1);
-	if (time < -1) {
+	if (time < -1.0) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Decay Time Override cannot be less than -1.");
 	}
 	decayTimeOverride = time;
