@@ -158,7 +158,6 @@ public OnMapEnd()
 	if (db_PrepareStmtRead != INVALID_HANDLE)		CloseHandle(db_PrepareStmtRead);
 	if (db_PrepareStmtUpdate != INVALID_HANDLE)		CloseHandle(db_PrepareStmtUpdate);
 	if (db_PrepareStmtWrite != INVALID_HANDLE)		CloseHandle(db_PrepareStmtWrite);
-	if (timer_forwardTimer != INVALID_HANDLE)		KillTimer(timer_forwardTimer);
 }
 
 public OnPluginEnd()
