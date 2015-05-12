@@ -136,10 +136,45 @@ public OnPluginStart() {
 			timer_forwardTimer = CreateTimer(86400.0, ForwardTimer, _, TIMER_REPEAT);
 		}
 	}
+}
+
+public OnMapStart()
+{
+	if (!GetConVarBool(g_enabled)) return;
 	
 	connectDB();
 	InitializeDatabase();
-	PrepareQuery();
+	PrepareQuery(); // Do this OnMapStart rather than OnPluginStart because it loses connection to the DB OnMapEnd.
+}
+
+public OnMapEnd()
+{
+	if (!GetConVarBool(g_enabled)) return;
+	
+	if (db != INVALID_HANDLE) 						CloseHandle(db); // Same reason as above ^, close the handles since it loses connection to the DB
+	if (db_PrepareStmtCheck != INVALID_HANDLE)		CloseHandle(db_PrepareStmtCheck);
+	if (db_PrepareStmtForward != INVALID_HANDLE)	CloseHandle(db_PrepareStmtForward);
+	if (db_PrepareStmtLog != INVALID_HANDLE)		CloseHandle(db_PrepareStmtLog);
+	if (db_PrepareStmtLogread != INVALID_HANDLE)	CloseHandle(db_PrepareStmtLogread);
+	if (db_PrepareStmtRead != INVALID_HANDLE)		CloseHandle(db_PrepareStmtRead);
+	if (db_PrepareStmtUpdate != INVALID_HANDLE)		CloseHandle(db_PrepareStmtUpdate);
+	if (db_PrepareStmtWrite != INVALID_HANDLE)		CloseHandle(db_PrepareStmtWrite);
+	if (timer_forwardTimer != INVALID_HANDLE)		KillTimer(timer_forwardTimer);
+}
+
+public OnPluginEnd()
+{
+	if (!GetConVarBool(g_enabled)) return;
+	
+	if (db != INVALID_HANDLE) 						CloseHandle(db); // Not sure if OnMapEnd is called before OnPluginEnd, so this is here just in case.
+	if (db_PrepareStmtCheck != INVALID_HANDLE)		CloseHandle(db_PrepareStmtCheck);
+	if (db_PrepareStmtForward != INVALID_HANDLE)	CloseHandle(db_PrepareStmtForward);
+	if (db_PrepareStmtLog != INVALID_HANDLE)		CloseHandle(db_PrepareStmtLog);
+	if (db_PrepareStmtLogread != INVALID_HANDLE)	CloseHandle(db_PrepareStmtLogread);
+	if (db_PrepareStmtRead != INVALID_HANDLE)		CloseHandle(db_PrepareStmtRead);
+	if (db_PrepareStmtUpdate != INVALID_HANDLE)		CloseHandle(db_PrepareStmtUpdate);
+	if (db_PrepareStmtWrite != INVALID_HANDLE)		CloseHandle(db_PrepareStmtWrite);
+	if (timer_forwardTimer != INVALID_HANDLE)		KillTimer(timer_forwardTimer);	
 }
 
 public ForwardEnableChanged(Handle:cvar, const String:oldVal[], const String:newVal[]) {
@@ -221,18 +256,6 @@ public Action:RunForwardCheck(client, args) {
 	}
 	ReplyToCommand(client, "[SM] Forward ran on %i SteamIDs", ForwardCheck());
 	return Plugin_Handled;
-}
-
-public OnPluginEnd() {
-	if (db != INVALID_HANDLE) { CloseHandle(db); }
-	if (db_PrepareStmtCheck != INVALID_HANDLE) { CloseHandle(db_PrepareStmtCheck); }
-	if (db_PrepareStmtForward != INVALID_HANDLE) { CloseHandle(db_PrepareStmtForward); }
-	if (db_PrepareStmtLog != INVALID_HANDLE) { CloseHandle(db_PrepareStmtLog); }
-	if (db_PrepareStmtLogread != INVALID_HANDLE) { CloseHandle(db_PrepareStmtLogread); }
-	if (db_PrepareStmtRead != INVALID_HANDLE) { CloseHandle(db_PrepareStmtRead); }
-	if (db_PrepareStmtUpdate != INVALID_HANDLE) { CloseHandle(db_PrepareStmtUpdate); }
-	if (db_PrepareStmtWrite != INVALID_HANDLE) { CloseHandle(db_PrepareStmtWrite); }
-	if (timer_forwardTimer != INVALID_HANDLE) { KillTimer(timer_forwardTimer); }
 }
 
 /* GetPlayerTime
@@ -434,10 +457,11 @@ WriteToForwardConfig(const String:SteamID[], protected = -1, ran = -1) {
  * 
 */
 public Action:GetPlayerTimeTwoWeeks(client, args) {
-	if(!CheckCommandAccess(client, "sm_playertimetimespan", ADMFLAG_KICK)) {
-		PrintToChat(client, "[SM] You do not have the Permission to use this command");
-		return Plugin_Handled;
-	}
+// There is no need for this check, sourcemod already does this when the player types the RegAdminCmd.
+//	if(!CheckCommandAccess(client, "sm_playertimetimespan", ADMFLAG_KICK)) {
+//		PrintToChat(client, "[SM] You do not have the Permission to use this command");
+//		return Plugin_Handled;
+//	}
 	if(args < 1) {
 		ReplyToCommand(client, "[SM] Wrong Syntax.\n[SM] Usage: sm_playertimetimespan <Username/STEAMID2>");
 		return Plugin_Handled;
@@ -460,15 +484,15 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
 			if(!SQL_Execute(db_PrepareStmtCheck)) {
 				decl String:Error[1024];
 				SQL_GetError(db_PrepareStmtCheck, Error, sizeof(Error));
-				PrintToServer("An error has occured while querying the Database: %s", Error);
-				ReplyToCommand(client, "An error has occured while querying the Database: %s", Error);
+				PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
+				ReplyToCommand(client, "[SM] An error has occured while querying the Database: %s", Error);
 				return Plugin_Handled;
 			}
 			if(SQL_FetchRow(db_PrepareStmtCheck)) {
 				if(SQL_FetchInt(db_PrepareStmtCheck, 0) == 1) {
 					new getInt = GetLastTwoWeeks(arg1);
 					if (getInt < 0) {
-						ReplyToCommand(client, "An error has occured while fetching Playertime. Check Serverconsole for more information.");
+						ReplyToCommand(client, "[SM] An error has occured while fetching Playertime. Check Serverconsole for more information.");
 						return Plugin_Handled;
 					} else {
 						decl String:timeString[1024];
@@ -481,8 +505,8 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
 					return Plugin_Handled;
 				}
 			} else {
-				PrintToServer("An error has occured while fetching the Query Result");
-				ReplyToCommand(client, "An error has occured while fetching the Query Result");
+				PrintToServer("[PlayerTimeTracker] An error has occured while fetching the Query Result");
+				ReplyToCommand(client, "[SM] An error has occured while fetching the Query Result");
 				return Plugin_Handled;
 			}
 		}
@@ -495,14 +519,14 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
 			if(!SQL_Execute(db_PrepareStmtCheck)) {
 				decl String:Error[1024];
 				SQL_GetError(db_PrepareStmtCheck, Error, sizeof(Error));
-				PrintToServer("An error has occured while querying the Database: %s", Error);
-				ReplyToCommand(client, "An error has occured while querying the Database: %s", Error);
+				PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
+				ReplyToCommand(client, "[SM] An error has occured while querying the Database: %s", Error);
 			}
 			if(SQL_FetchRow(db_PrepareStmtCheck)) {
 				if(SQL_FetchInt(db_PrepareStmtCheck, 0) == 1) {
 					new getInt = GetLastTwoWeeks(steamID);
 					if (getInt < 0) {
-						ReplyToCommand(client, "An error has occured while fetching Playertime. Check Serverconsole for more information.");
+						ReplyToCommand(client, "[SM] An error has occured while fetching Playertime. Check Serverconsole for more information.");
 						return Plugin_Handled;
 					} else {
 						decl String:timeString[1024];
@@ -516,8 +540,8 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
 					ReplyToCommand(client, "[SM] User %s has played for %s in the past 2 weeks.", clientName, timeString);
 				}
 			} else {
-				PrintToServer("An error has occured while fetching the Query Result");
-				ReplyToCommand(client, "An error has occured while fetching the Query Result");
+				PrintToServer("[PlayerTimeTracker] An error has occured while fetching the Query Result");
+				ReplyToCommand(client, "[SM] An error has occured while fetching the Query Result");
 			}
 		}
 	}
@@ -531,7 +555,7 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
  * 
 */
 public OnClientDisconnect(client) {
-	if (g_enabled) { if (!IsFakeClient(client)) { writeToDB(client); } }
+	if (g_enabled && IsClientInGame(client) && !IsFakeClient(client)) writeToDB(client); // Have to run IsClientConnected or IsClientInGame BEFORE the IsFakeClient check or you'll get an index out of bounds.
 }
 
 GetLastTwoWeeks(const String:steamid[]) {
@@ -541,7 +565,7 @@ GetLastTwoWeeks(const String:steamid[]) {
 	if(!SQL_Execute(db_PrepareStmtLogread)) {
 		decl String:Error[1024];
 		SQL_GetError(db_PrepareStmtLogread, Error, sizeof(Error));
-		PrintToServer("An error has occured while querying the Database: %s", Error);
+		PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
 		return -1;
 	}
 	if(SQL_MoreRows(db_PrepareStmtLogread)) {
@@ -573,7 +597,7 @@ bool:connectDB() {
 	}
 
 	if (db == INVALID_HANDLE) {
-		PrintToServer("Could not connect to database \"default\": %s", error);
+		PrintToServer("[PlayerTimeTracker] Could not connect to database \"default\": %s", error);
 		return false;
 	}
 	return true;
@@ -585,49 +609,49 @@ bool:PrepareQuery() {
 	if (db_PrepareStmtWrite == INVALID_HANDLE) {
 		db_PrepareStmtWrite = SQL_PrepareQuery(db, WriteQuery, error, sizeof(error));
 		if (db_PrepareStmtWrite == INVALID_HANDLE) {
-			PrintToServer("Could not prepare write statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare write statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtRead == INVALID_HANDLE) {
 		db_PrepareStmtRead = SQL_PrepareQuery(db, ReadQuery, error, sizeof(error));
 		if (db_PrepareStmtRead == INVALID_HANDLE) {
-			PrintToServer("Could not prepare read statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare read statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtCheck == INVALID_HANDLE) {
 		db_PrepareStmtCheck = SQL_PrepareQuery(db, CheckQuery, error, sizeof(error));
 		if (db_PrepareStmtCheck == INVALID_HANDLE) {
-			PrintToServer("Could not prepare check statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare check statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtUpdate == INVALID_HANDLE) {
 		db_PrepareStmtUpdate = SQL_PrepareQuery(db, UpdateQuery, error, sizeof(error));
 		if (db_PrepareStmtUpdate == INVALID_HANDLE) {
-			PrintToServer("Could not prepare check statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare check statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtLog == INVALID_HANDLE) {
 		db_PrepareStmtLog = SQL_PrepareQuery(db, LogQuery, error, sizeof(error));
 		if (db_PrepareStmtLog == INVALID_HANDLE) {
-			PrintToServer("Could not prepare log statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare log statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtLogread == INVALID_HANDLE) {
 		db_PrepareStmtLogread = SQL_PrepareQuery(db, ReadlogQuery, error, sizeof(error));
 		if (db_PrepareStmtLogread == INVALID_HANDLE) {
-			PrintToServer("Could not prepare log statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare log statement: %s", error);
 			return false;
 		}
 	}
 	if (db_PrepareStmtForward == INVALID_HANDLE) {
 		db_PrepareStmtForward = SQL_PrepareQuery(db, ForwardQuery, error, sizeof(error));
 		if (db_PrepareStmtForward == INVALID_HANDLE) {
-			PrintToServer("Could not prepare log statement: %s", error);
+			PrintToServer("[PlayerTimeTracker] Could not prepare log statement: %s", error);
 			return false;
 		}
 	}
@@ -638,7 +662,7 @@ bool:InitializeDatabase() {
 	decl String:buffer[256];
 	SQL_ReadDriver(db, buffer, sizeof(buffer));
 	if (!tableExists()) {
-		PrintToServer("Creating Player Time Tracker Table")
+		PrintToServer("[PlayerTimeTracker] Creating Player Time Tracker Table")
 		if (strcmp(buffer, "mysql") == 0) {
 			SQL_FastQuery(db, init_mysql1, sizeof(init_mysql1));
 			SQL_FastQuery(db, init_mysql2, sizeof(init_mysql2));
@@ -648,7 +672,7 @@ bool:InitializeDatabase() {
 			SQL_FastQuery(db, init_sqlite2, sizeof(init_sqlite2));
 			SQL_FastQuery(db, init_sqlite3, sizeof(init_sqlite3));
 		} else {
-			PrintToServer("[SM] Unknown driver type '%s', cannot create tables.", buffer);
+			PrintToServer("[PlayerTimeTracker] Unknown driver type '%s', cannot create tables.", buffer);
 		}
 	}
 }
@@ -662,12 +686,12 @@ bool:tableExists() {
 	} else if (strcmp(buffer, "sqlite") == 0) {
 		query = SQL_Query(db, exists_sqlite, sizeof(exists_sqlite));
 	} else {
-		PrintToServer("[SM] Unknown driver type '%s', cannot check for tables.", buffer);
+		PrintToServer("[PlayerTimeTracker] Unknown driver type '%s', cannot check for tables.", buffer);
 	}
 	if (query == INVALID_HANDLE) {
 		new String:error[255];
 		SQL_GetError(db, error, sizeof(error));
-		PrintToServer("Failed to query (error: %s)", error);
+		PrintToServer("[PlayerTimeTracker] Failed to query (error: %s)", error);
 		return false
 	} else {
 		SQL_FetchRow(query)
@@ -690,14 +714,14 @@ writeToDB(client) {
 	if(!SQL_Execute(db_PrepareStmtLog)) {
 		decl String:Error[1024];
 		SQL_GetError(db_PrepareStmtLog, Error, sizeof(Error));
-		PrintToServer("An error has occured while querying the Database: %s", Error);
+		PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
 		return;
 	}
 	SQL_BindParamString(db_PrepareStmtCheck, 0, authid, true);
 	if(!SQL_Execute(db_PrepareStmtCheck)) {
 		decl String:Error[1024];
 		SQL_GetError(db_PrepareStmtCheck, Error, sizeof(Error));
-		PrintToServer("An error has occured while querying the Database: %s", Error);
+		PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
 		return;
 	}
 	
@@ -707,7 +731,7 @@ writeToDB(client) {
 			if(!SQL_Execute(db_PrepareStmtRead)) {
 				decl String:Error[1024];
 				SQL_GetError(db_PrepareStmtRead, Error, sizeof(Error));
-				PrintToServer("An error has occured while querying the Database: %s", Error);
+				PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
 				return;
 			}
 			if(SQL_FetchRow(db_PrepareStmtRead)) {
@@ -718,7 +742,7 @@ writeToDB(client) {
 				if(!SQL_Execute(db_PrepareStmtUpdate)) {
 					decl String:Error[1024];
 					SQL_GetError(db_PrepareStmtUpdate, Error, sizeof(Error));
-					PrintToServer("An error has occured while querying the Database: %s", Error);
+					PrintToServer("[PlayerTimeTracker] An error has occured while querying the Database: %s", Error);
 					return;
 				}
 				WriteToForwardConfig(authid);
@@ -729,11 +753,11 @@ writeToDB(client) {
 			if(!SQL_Execute(db_PrepareStmtWrite)) {
 				decl String:Error[1024];
 				SQL_GetError(db_PrepareStmtWrite, Error, sizeof(Error));
-				PrintToServer("An error has occured while writing to the Database: %s", Error);
+				PrintToServer("[PlayerTimeTracker] An error has occured while writing to the Database: %s", Error);
 			}
 		}
 	} else {
-		PrintToServer("An error has occured while fetching the Query Result");
+		PrintToServer("[PlayerTimeTracker] An error has occured while fetching the Query Result");
 		return;
 	}
 }
