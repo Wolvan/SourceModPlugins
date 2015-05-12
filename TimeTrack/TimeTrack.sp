@@ -101,7 +101,6 @@ public Plugin:myinfo = {
  * Category: Plugin Callback
  * 
  * Do basic startup work like loading translations, creating convars and registering Commands
- * as well as trying to initialize Database Connections
  * 
 */
 public OnPluginStart() {
@@ -250,10 +249,6 @@ public Action:ForwardTimer(Handle:timer) {
 }
 
 public Action:RunForwardCheck(client, args) {
-	if(!CheckCommandAccess(client, "sm_playertimeforward", ADMFLAG_KICK)) {
-		ReplyToCommand(client, "[SM] You do not have the Permission to use this command");
-		return Plugin_Handled;
-	}
 	ReplyToCommand(client, "[SM] Forward ran on %i SteamIDs", ForwardCheck());
 	return Plugin_Handled;
 }
@@ -265,10 +260,6 @@ public Action:RunForwardCheck(client, args) {
  * 
 */
 public Action:GetPlayerTime(client, args) {
-	if(!CheckCommandAccess(client, "sm_playertime", ADMFLAG_KICK)) {
-		PrintToChat(client, "[SM] You do not have the Permission to use this command");
-		return Plugin_Handled;
-	}
 	if(args < 1) {
 		ReplyToCommand(client, "[SM] Wrong Syntax.\n[SM] Usage: sm_playertime <Username/STEAMID2>");
 		return Plugin_Handled;
@@ -326,7 +317,7 @@ public Action:GetPlayerTime(client, args) {
 		decl String:clientName[1024];
 		for (new i = 0; i < target_count; i++) {
 			clientPlayTime =  RoundFloat(GetClientTime(target_list[i]));
-			GetClientAuthString(target_list[i], steamID, sizeof(steamID));
+			GetClientAuthId(target_list[i], AuthId_Steam2, steamID, sizeof(steamID));
 			GetClientName(target_list[i], clientName, sizeof(clientName));
 			SQL_BindParamString(db_PrepareStmtCheck, 0, steamID, true);
 			if(!SQL_Execute(db_PrepareStmtCheck)) {
@@ -366,10 +357,6 @@ public Action:GetPlayerTime(client, args) {
 }
 
 public Action:Command_ProtectFromForward(client, args) {
-	if(!CheckCommandAccess(client, "sm_playertimeprotect", ADMFLAG_KICK)) {
-		PrintToChat(client, "[SM] You do not have the Permission to use this command");
-		return Plugin_Handled;
-	}
 	if(args < 1) {
 		ReplyToCommand(client, "[SM] Wrong Syntax.\n[SM] Usage: sm_playertime <Username/STEAMID2>");
 		return Plugin_Handled;
@@ -390,7 +377,7 @@ public Action:Command_ProtectFromForward(client, args) {
 		}
 		decl String:clientName[1024];
 		for (new i = 0; i < target_count; i++) {
-			GetClientAuthString(client, steamID, sizeof(steamID));
+			GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
 			GetClientName(client, clientName, sizeof(clientName));
 			WriteToForwardConfig(steamID, 1);
 			ReplyToCommand(client, "[SM] Protected %s from forward", clientName);
@@ -400,10 +387,6 @@ public Action:Command_ProtectFromForward(client, args) {
 }
 
 public Action:Command_UnprotectFromForward(client, args) {
-	if(!CheckCommandAccess(client, "sm_playertimeunprotect", ADMFLAG_KICK)) {
-		PrintToChat(client, "[SM] You do not have the Permission to use this command");
-		return Plugin_Handled;
-	}
 	if(args < 1) {
 		ReplyToCommand(client, "[SM] Wrong Syntax.\n[SM] Usage: sm_playertime <Username/STEAMID2>");
 		return Plugin_Handled;
@@ -424,7 +407,7 @@ public Action:Command_UnprotectFromForward(client, args) {
 		}
 		decl String:clientName[1024];
 		for (new i = 0; i < target_count; i++) {
-			GetClientAuthString(client, steamID, sizeof(steamID));
+			GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
 			GetClientName(client, clientName, sizeof(clientName));
 			WriteToForwardConfig(steamID, 0);
 			ReplyToCommand(client, "[SM] Unprotected %s from forward", clientName);
@@ -433,12 +416,12 @@ public Action:Command_UnprotectFromForward(client, args) {
 	return Plugin_Handled;
 }
 
-WriteToForwardConfig(const String:SteamID[], protected = -1, ran = -1) {
+WriteToForwardConfig(const String:SteamID[], iProtected = -1, ran = -1) {
 	decl String:EscapedString[2048];
 	decl String:protectedString[128]; decl String:ranString[128];
 	SQL_EscapeString(db, SteamID, EscapedString, sizeof(EscapedString));
-	if (protected == -1) { strcopy(protectedString, sizeof(protectedString), "protected_from_forward"); }
-	else { IntToString(protected, protectedString, sizeof(protectedString)); }
+	if (iProtected == -1) { strcopy(protectedString, sizeof(protectedString), "protected_from_forward"); }
+	else { IntToString(iProtected, protectedString, sizeof(protectedString)); }
 	if (ran == -1) { strcopy(ranString, sizeof(ranString), "already_ran_on"); }
 	else { IntToString(ran, ranString, sizeof(ranString)); }
 	decl String:queryString[2048];
@@ -457,11 +440,6 @@ WriteToForwardConfig(const String:SteamID[], protected = -1, ran = -1) {
  * 
 */
 public Action:GetPlayerTimeTwoWeeks(client, args) {
-// There is no need for this check, sourcemod already does this when the player types the RegAdminCmd.
-//	if(!CheckCommandAccess(client, "sm_playertimetimespan", ADMFLAG_KICK)) {
-//		PrintToChat(client, "[SM] You do not have the Permission to use this command");
-//		return Plugin_Handled;
-//	}
 	if(args < 1) {
 		ReplyToCommand(client, "[SM] Wrong Syntax.\n[SM] Usage: sm_playertimetimespan <Username/STEAMID2>");
 		return Plugin_Handled;
@@ -513,7 +491,7 @@ public Action:GetPlayerTimeTwoWeeks(client, args) {
 		decl String:clientName[1024];
 		for (new i = 0; i < target_count; i++) {
 			clientPlayTime =  RoundFloat(GetClientTime(target_list[i]));
-			GetClientAuthString(target_list[i], steamID, sizeof(steamID));
+			GetClientAuthId(target_list[i], AuthId_Steam2, steamID, sizeof(steamID));
 			GetClientName(target_list[i], clientName, sizeof(clientName));
 			SQL_BindParamString(db_PrepareStmtCheck, 0, steamID, true);
 			if(!SQL_Execute(db_PrepareStmtCheck)) {
@@ -707,7 +685,7 @@ bool:tableExists() {
 writeToDB(client) {
 	decl String:authid[256];
 	new clientPlayTime = RoundFloat(GetClientTime(client));
-	GetClientAuthString(client, authid, sizeof(authid));
+	GetClientAuthId(client, AuthId_Steam2, authid, sizeof(authid));
 	SQL_BindParamString(db_PrepareStmtLog, 0, authid, true);
 	SQL_BindParamInt(db_PrepareStmtLog, 1, clientPlayTime, true);
 	SQL_BindParamInt(db_PrepareStmtLog, 2, GetTime(), true);
